@@ -4,25 +4,25 @@ phases:
     commands:
       - echo "Logging in to Amazon ECR..."
       - aws --version
-      - echo "Account ID: $AWS_ACCOUNT_ID"
-      - echo "Region: $AWS_DEFAULT_REGION"
-      - echo "ECR Repo: $ECR_REPO_NAME"
+      - echo "Account ID is $AWS_ACCOUNT_ID"
+      - echo "Region is $AWS_DEFAULT_REGION"
+      - echo "ECR Repo is $ECR_REPO_NAME"
       - ECR_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
-      - echo "ECR URI: $ECR_REPO_URI"
+      - echo "ECR URI is $ECR_REPO_URI"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:=latest}
-      - echo "Image tag: $IMAGE_TAG"
+      - IMAGE_TAG=${COMMIT_HASH:-latest}
+      - echo "Image tag is $IMAGE_TAG"
   build:
     commands:
-      - echo "Build started on `date`"
+      - echo "Build started on $(date)"
       - echo "Building the Docker image..."
       - docker build -t $ECR_REPO_URI:latest .
       - docker tag $ECR_REPO_URI:latest $ECR_REPO_URI:$IMAGE_TAG
       - echo "Docker images built successfully"
   post_build:
     commands:
-      - echo "Build completed on `date`"
+      - echo "Build completed on $(date)"
       - echo "Pushing the Docker images..."
       - docker push $ECR_REPO_URI:latest
       - docker push $ECR_REPO_URI:$IMAGE_TAG
@@ -35,5 +35,5 @@ artifacts:
   files:
     - imagedefinitions.json
     - appspec.yml
-    - 'scripts/**/*'
+    - scripts/**/*
   discard-paths: no
