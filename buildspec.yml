@@ -5,7 +5,7 @@ phases:
       - echo "Logging in to Amazon ECR..."
       - aws --version
       - echo "Account ID is $AWS_ACCOUNT_ID"
-      - echo "Region is $AWS_DEFAULT_REGION"
+      - echo "Region is $AWS_DEFAULT_REGION"  
       - echo "ECR Repo is $ECR_REPO_NAME"
       - ECR_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
       - echo "ECR URI is $ECR_REPO_URI"
