@@ -233,6 +233,7 @@ resource "aws_launch_template" "blue_lt" {
   user_data = base64encode(<<-EOF
     #!/bin/bash
     set -x
+    exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     
     # Update system
     yum update -y
@@ -250,26 +251,37 @@ resource "aws_launch_template" "blue_lt" {
     chmod +x ./install
     ./install auto
     
-    # Start CodeDeploy agent
+    # Start CodeDeploy agent and enable it
     service codedeploy-agent start
     chkconfig codedeploy-agent on
     
-    # Create deployment directory
+    # Verify agent is running
+    service codedeploy-agent status
+    
+    # Create deployment directory with proper permissions
     mkdir -p /tmp/codedeploy
     chown ec2-user:ec2-user /tmp/codedeploy
     
-    echo "Base installation completed at $(date)" > /tmp/base-install.log
+    # Tag instance for CodeDeploy targeting
+    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+    REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
     
-    # Add environment tags for CodeDeploy
-    aws ec2 create-tags --region eu-west-2 --resources $(curl -s http://169.254.169.254/latest/meta-data/instance-id) --tags Key=Environment,Value=blue
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Name,Value=blue-instance
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Environment,Value=blue
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=CodeDeployEnvironment,Value=blue
+    
+    echo "Blue instance setup completed at $(date)" > /tmp/base-install.log
+    echo "CodeDeploy agent status:" >> /tmp/base-install.log
+    service codedeploy-agent status >> /tmp/base-install.log
   EOF
   )
 
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name        = "blue-instance"
-      Environment = "blue"
+      Name                   = "blue-instance"
+      Environment           = "blue"
+      CodeDeployEnvironment = "blue"
     }
   }
 }
@@ -293,6 +305,7 @@ resource "aws_launch_template" "green_lt" {
   user_data = base64encode(<<-EOF
     #!/bin/bash
     set -x
+    exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     
     # Update system
     yum update -y
@@ -310,26 +323,37 @@ resource "aws_launch_template" "green_lt" {
     chmod +x ./install
     ./install auto
     
-    # Start CodeDeploy agent
+    # Start CodeDeploy agent and enable it
     service codedeploy-agent start
     chkconfig codedeploy-agent on
     
-    # Create deployment directory
+    # Verify agent is running
+    service codedeploy-agent status
+    
+    # Create deployment directory with proper permissions
     mkdir -p /tmp/codedeploy
     chown ec2-user:ec2-user /tmp/codedeploy
     
-    echo "Base installation completed at $(date)" > /tmp/base-install.log
+    # Tag instance for CodeDeploy targeting
+    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+    REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
     
-    # Add environment tags for CodeDeploy
-    aws ec2 create-tags --region eu-west-2 --resources $(curl -s http://169.254.169.254/latest/meta-data/instance-id) --tags Key=Environment,Value=green
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Name,Value=green-instance
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Environment,Value=green
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=CodeDeployEnvironment,Value=green
+    
+    echo "Green instance setup completed at $(date)" > /tmp/base-install.log
+    echo "CodeDeploy agent status:" >> /tmp/base-install.log
+    service codedeploy-agent status >> /tmp/base-install.log
   EOF
   )
 
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name        = "green-instance"
-      Environment = "green"
+      Name                   = "green-instance"
+      Environment           = "green"
+      CodeDeployEnvironment = "green"
     }
   }
 }

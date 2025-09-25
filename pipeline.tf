@@ -290,39 +290,26 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
-# CodeDeploy Deployment Group
+# SIMPLIFIED CodeDeploy Deployment Group - Use IN_PLACE deployment first
 resource "aws_codedeploy_deployment_group" "zenith_bank_dg" {
   app_name              = aws_codedeploy_app.zenith_bank_app.name
   deployment_group_name = "zenith-bank-dg"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
 
+  # Use IN_PLACE deployment for initial testing
   deployment_style {
-    deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
+    deployment_option = "WITHOUT_TRAFFIC_CONTROL"
+    deployment_type   = "IN_PLACE"
   }
 
-  blue_green_deployment_config {
-    deployment_ready_option {
-      action_on_timeout = "CONTINUE_DEPLOYMENT"
-    }
-    green_fleet_provisioning_option {
-      action = "DISCOVER_EXISTING"
-    }
-    terminate_blue_instances_on_deployment_success {
-      action                           = "TERMINATE"
-      termination_wait_time_in_minutes = 5
-    }
-  }
+  # Target instances by Auto Scaling Groups
+  autoscaling_groups = [aws_autoscaling_group.blue_asg.name]
 
-  autoscaling_groups = [aws_autoscaling_group.blue_asg.name, aws_autoscaling_group.green_asg.name]
-
-  load_balancer_info {
-    target_group_info {
-      name = aws_lb_target_group.blue_tg.name
-    }
-    target_group_info {
-      name = aws_lb_target_group.green_tg.name
-    }
+  # Also use EC2 tag filters as backup targeting
+  ec2_tag_filter {
+    key   = "Environment"
+    type  = "KEY_AND_VALUE"
+    value = "blue"
   }
 
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
