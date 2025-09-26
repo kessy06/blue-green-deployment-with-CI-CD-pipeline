@@ -1,6 +1,6 @@
 # ECR Repository
-resource "aws_ecr_repository" "zenith_bank_app" {
-  name = "zenith-bank-app"
+resource "aws_ecr_repository" "bencenet_bank_app" {
+  name = "bencenet-bank-app"
   image_tag_mutability = "MUTABLE"
   image_scanning_configuration {
     scan_on_push = true
@@ -9,8 +9,8 @@ resource "aws_ecr_repository" "zenith_bank_app" {
 }
 
 # ECR Lifecycle Policy
-resource "aws_ecr_lifecycle_policy" "zenith_bank_app_policy" {
-  repository = aws_ecr_repository.zenith_bank_app.name
+resource "aws_ecr_lifecycle_policy" "bencenet_bank_app_policy" {
+  repository = aws_ecr_repository.bencenet_bank_app.name
   policy = jsonencode({
     rules = [
       {
@@ -31,7 +31,7 @@ resource "aws_ecr_lifecycle_policy" "zenith_bank_app_policy" {
 
 # S3 Bucket for CodePipeline Artifacts
 resource "aws_s3_bucket" "codepipeline_bucket" {
-  bucket = "zenith-bank-codepipeline-bucket-${random_id.bucket_suffix.hex}"
+  bucket = "bencenet-bank-codepipeline-bucket-${random_id.bucket_suffix.hex}"
 }
 
 resource "random_id" "bucket_suffix" {
@@ -49,7 +49,7 @@ resource "aws_s3_bucket_public_access_block" "codepipeline_bucket" {
 
 # IAM Role for CodeBuild
 resource "aws_iam_role" "codebuild_role" {
-  name = "codebuild-zenith-bank-role"
+  name = "bencenet-codebuild-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -65,7 +65,7 @@ resource "aws_iam_role" "codebuild_role" {
 }
 
 resource "aws_iam_role_policy" "codebuild_policy" {
-  name = "codebuild-zenith-bank-policy"
+  name = "bencenet-codebuild-policy"
   role = aws_iam_role.codebuild_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -100,9 +100,9 @@ resource "aws_iam_role_policy_attachment" "codebuild_ecr_policy" {
 }
 
 # CodeBuild Project
-resource "aws_codebuild_project" "zenith_bank_build" {
-  name          = "zenith-bank-build"
-  description   = "Build project for Zenith Bank Docker application"
+resource "aws_codebuild_project" "bencenet_bank_build" {
+  name          = "bencenet-bank-build"
+  description   = "Build project for Bencenet Bank Docker application"
   service_role  = aws_iam_role.codebuild_role.arn
   build_timeout = 10
 
@@ -128,12 +128,12 @@ resource "aws_codebuild_project" "zenith_bank_build" {
 
     environment_variable {
       name  = "ECR_REPO_NAME"
-      value = aws_ecr_repository.zenith_bank_app.name
+      value = aws_ecr_repository.bencenet_bank_app.name
     }
 
     environment_variable {
       name  = "IMAGE_REPO_NAME"
-      value = aws_ecr_repository.zenith_bank_app.name
+      value = aws_ecr_repository.bencenet_bank_app.name
     }
 
     environment_variable {
@@ -150,7 +150,7 @@ resource "aws_codebuild_project" "zenith_bank_build" {
 
 # IAM Role for CodePipeline
 resource "aws_iam_role" "codepipeline_role" {
-  name = "codepipeline-zenith-bank-role"
+  name = "bencenet-codepipeline-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -167,7 +167,7 @@ resource "aws_iam_role" "codepipeline_role" {
 
 # CodePipeline Policy
 resource "aws_iam_role_policy" "codepipeline_policy" {
-  name = "codepipeline-zenith-bank-policy"
+  name = "bencenet-codepipeline-policy"
   role = aws_iam_role.codepipeline_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -194,7 +194,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "codebuild:StartBuild",
           "codebuild:BatchGetProjects"
         ]
-        Resource = aws_codebuild_project.zenith_bank_build.arn
+        Resource = aws_codebuild_project.bencenet_bank_build.arn
       },
       {
         Effect = "Allow"
@@ -213,7 +213,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         Action = [
           "ecr:DescribeImages"
         ]
-        Resource = aws_ecr_repository.zenith_bank_app.arn
+        Resource = aws_ecr_repository.bencenet_bank_app.arn
       },
       {
         Effect = "Allow"
@@ -230,7 +230,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 
 # Separate policy for CodeStar connections
 resource "aws_iam_role_policy" "codepipeline_codestar_policy" {
-  name = "codepipeline-codestar-policy"
+  name = "bencenet-codepipeline-codestar-policy"
   role = aws_iam_role.codepipeline_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -263,14 +263,14 @@ resource "aws_iam_role_policy" "codepipeline_codestar_policy" {
 }
 
 # CodeDeploy Application
-resource "aws_codedeploy_app" "zenith_bank_app" {
-  name             = "zenith-bank-app"
+resource "aws_codedeploy_app" "bencenet_bank_app" {
+  name             = "bencenet-bank-app"
   compute_platform = "Server"
 }
 
 # IAM Role for CodeDeploy
 resource "aws_iam_role" "codedeploy_role" {
-  name = "codedeploy-zenith-bank-role"
+  name = "bencenet-codedeploy-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -290,34 +290,82 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
-# SIMPLIFIED CodeDeploy Deployment Group - Use IN_PLACE deployment first
-resource "aws_codedeploy_deployment_group" "zenith_bank_dg" {
-  app_name              = aws_codedeploy_app.zenith_bank_app.name
-  deployment_group_name = "zenith-bank-dg"
+# Comprehensive policy for blue-green deployments
+resource "aws_iam_role_policy" "codedeploy_bluegreen_policy" {
+  name = "bencenet-codedeploy-bluegreen-policy"
+  role = aws_iam_role.codedeploy_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "autoscaling:*",
+          "elasticloadbalancing:*",
+          "ec2:*",
+          "iam:PassRole",
+          "iam:GetRole",
+          "iam:ListInstanceProfiles",
+          "iam:ListRoles",
+          "tag:*"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# PROPERLY CONFIGURED Blue-Green CodeDeploy Deployment Group
+resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
+  app_name              = aws_codedeploy_app.bencenet_bank_app.name
+  deployment_group_name = "bencenet-bank-dg"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
 
-  # Use IN_PLACE deployment for initial testing
+  # Enable Blue-Green deployment
   deployment_style {
-    deployment_option = "WITHOUT_TRAFFIC_CONTROL"
-    deployment_type   = "IN_PLACE"
+    deployment_option = "WITH_TRAFFIC_CONTROL"
+    deployment_type   = "BLUE_GREEN"
   }
 
-  # Target instances by Auto Scaling Groups
+  blue_green_deployment_config {
+    deployment_ready_option {
+      action_on_timeout    = "CONTINUE_DEPLOYMENT"
+      wait_time_in_minutes = 0
+    }
+    
+    green_fleet_provisioning_option {
+      action = "COPY_AUTO_SCALING_GROUP"
+    }
+    
+    terminate_blue_instances_on_deployment_success {
+      action                           = "KEEP_ALIVE"
+      termination_wait_time_in_minutes = 5
+    }
+  }
+
+  # Use only blue ASG as the source template
   autoscaling_groups = [aws_autoscaling_group.blue_asg.name]
 
-  # Also use EC2 tag filters as backup targeting
-  ec2_tag_filter {
-    key   = "Environment"
-    type  = "KEY_AND_VALUE"
-    value = "blue"
+  load_balancer_info {
+    target_group_info {
+      name = aws_lb_target_group.blue_tg.name
+    }
   }
 
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 }
 
 # CodePipeline
-resource "aws_codepipeline" "zenith_bank_pipeline" {
-  name     = "zenith-bank-pipeline"
+resource "aws_codepipeline" "bencenet_bank_pipeline" {
+  name     = "bencenet-bank-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
@@ -359,7 +407,7 @@ resource "aws_codepipeline" "zenith_bank_pipeline" {
       version          = "1"
 
       configuration = {
-        ProjectName = aws_codebuild_project.zenith_bank_build.name
+        ProjectName = aws_codebuild_project.bencenet_bank_build.name
       }
     }
   }
@@ -377,8 +425,8 @@ resource "aws_codepipeline" "zenith_bank_pipeline" {
       version         = "1"
 
       configuration = {
-        ApplicationName     = aws_codedeploy_app.zenith_bank_app.name
-        DeploymentGroupName = aws_codedeploy_deployment_group.zenith_bank_dg.deployment_group_name
+        ApplicationName     = aws_codedeploy_app.bencenet_bank_app.name
+        DeploymentGroupName = aws_codedeploy_deployment_group.bencenet_bank_dg.deployment_group_name
       }
     }
   }
@@ -390,10 +438,10 @@ resource "aws_codepipeline" "zenith_bank_pipeline" {
 
 # Output ECR Repository URL
 output "ecr_repository_url" {
-  value = aws_ecr_repository.zenith_bank_app.repository_url
+  value = aws_ecr_repository.bencenet_bank_app.repository_url
 }
 
 # Output CodePipeline URL
 output "codepipeline_url" {
-  value = "https://eu-west-2.console.aws.amazon.com/codesuite/codepipeline/pipelines/${aws_codepipeline.zenith_bank_pipeline.name}/view"
+  value = "https://eu-west-2.console.aws.amazon.com/codesuite/codepipeline/pipelines/${aws_codepipeline.bencenet_bank_pipeline.name}/view"
 }

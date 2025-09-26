@@ -2,36 +2,22 @@
 #!/bin/bash
 set -e
 
-echo "Starting ApplicationStart hook..."
+echo "Starting application..."
 
-# Pull the latest Docker image
+# Get AWS region and account ID
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text --region $REGION)
+
 echo "Pulling latest Docker image..."
-docker pull 647540925028.dkr.ecr.eu-west-2.amazonaws.com/zenith-bank-app:latest
+docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/bencenet-bank-app:latest
 
-if [ $? -eq 0 ]; then
-    echo "✓ Docker image pulled successfully"
-else
-    echo "✗ Failed to pull Docker image"
-    exit 1
-fi
-
-# Start the Docker container
 echo "Starting Docker container..."
 docker run -d \
-  --name zenith-app \
+  --name bencenet-app \
   --restart unless-stopped \
   -p 80:80 \
-  647540925028.dkr.ecr.eu-west-2.amazonaws.com/zenith-bank-app:latest
+  $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/bencenet-bank-app:latest
 
-if [ $? -eq 0 ]; then
-    echo "✓ Docker container started successfully"
-else
-    echo "✗ Failed to start Docker container"
-    exit 1
-fi
+echo "Application started successfully."
 
-# Wait for application to start
-echo "Waiting for application to start..."
-sleep 15
-
-echo "ApplicationStart hook completed successfully."
+# ================================================

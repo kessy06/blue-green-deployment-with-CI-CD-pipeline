@@ -1,7 +1,7 @@
-# scripts/after_install.sh  
+# scripts/after_install.sh
 #!/bin/bash
 set -e
-set -x  # Add debug output
+set -x
 
 echo "Starting AfterInstall hook..."
 

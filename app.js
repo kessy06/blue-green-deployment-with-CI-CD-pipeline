@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+
 const app = express();
 const PORT = 80;
 
@@ -17,10 +18,10 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'healthy', 
+  res.status(200).json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    message: 'Zenith Bank EaZyLinks is running'
+    message: 'Bencenet Bank EaZyLinks is running'
   });
 });
 
@@ -51,5 +52,5 @@ app.get('/account-balance', (req, res) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Zenith Bank app running on port ${PORT}`);
+  console.log(`Bencenet Bank app running on port ${PORT}`);
 });

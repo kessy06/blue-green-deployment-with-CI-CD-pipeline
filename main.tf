@@ -12,52 +12,52 @@ provider "aws" {
 }
 
 # VPC Configuration
-resource "aws_vpc" "bank_vpc" {
+resource "aws_vpc" "bencenet_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
   tags = {
-    Name = "bank-vpc"
+    Name = "bencenet-bank-vpc"
   }
 }
 
 # Internet Gateway
-resource "aws_internet_gateway" "bank_igw" {
-  vpc_id = aws_vpc.bank_vpc.id
+resource "aws_internet_gateway" "bencenet_igw" {
+  vpc_id = aws_vpc.bencenet_vpc.id
   tags = {
-    Name = "bank-igw"
+    Name = "bencenet-bank-igw"
   }
 }
 
 # Public Subnets
 resource "aws_subnet" "public_subnet_1" {
-  vpc_id                  = aws_vpc.bank_vpc.id
+  vpc_id                  = aws_vpc.bencenet_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "eu-west-2a"
   map_public_ip_on_launch = true
   tags = {
-    Name = "public-subnet-1"
+    Name = "bencenet-public-subnet-1"
   }
 }
 
 resource "aws_subnet" "public_subnet_2" {
-  vpc_id                  = aws_vpc.bank_vpc.id
+  vpc_id                  = aws_vpc.bencenet_vpc.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "eu-west-2b"
   map_public_ip_on_launch = true
   tags = {
-    Name = "public-subnet-2"
+    Name = "bencenet-public-subnet-2"
   }
 }
 
 # Route Table
 resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.bank_vpc.id
+  vpc_id = aws_vpc.bencenet_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.bank_igw.id
+    gateway_id = aws_internet_gateway.bencenet_igw.id
   }
   tags = {
-    Name = "public-rt"
+    Name = "bencenet-public-rt"
   }
 }
 
@@ -74,9 +74,9 @@ resource "aws_route_table_association" "public_2_rt_a" {
 
 # Security Group for ALB
 resource "aws_security_group" "alb_sg" {
-  name        = "alb-sg"
+  name        = "bencenet-alb-sg"
   description = "Security group for ALB"
-  vpc_id      = aws_vpc.bank_vpc.id
+  vpc_id      = aws_vpc.bencenet_vpc.id
 
   ingress {
     from_port   = 80
@@ -93,15 +93,15 @@ resource "aws_security_group" "alb_sg" {
   }
 
   tags = {
-    Name = "alb-sg"
+    Name = "bencenet-alb-sg"
   }
 }
 
 # Security Group for EC2 Instances
 resource "aws_security_group" "ec2_sg" {
-  name        = "ec2-sg"
+  name        = "bencenet-ec2-sg"
   description = "Security group for EC2 instances"
-  vpc_id      = aws_vpc.bank_vpc.id
+  vpc_id      = aws_vpc.bencenet_vpc.id
 
   ingress {
     from_port       = 80
@@ -125,13 +125,13 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "ec2-sg"
+    Name = "bencenet-ec2-sg"
   }
 }
 
 # IAM Role for EC2
 resource "aws_iam_role" "ec2_role" {
-  name = "ec2-code-deploy-role"
+  name = "bencenet-ec2-code-deploy-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -162,9 +162,9 @@ resource "aws_iam_role_policy_attachment" "ec2_ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# FIXED: Use correct policy for EC2 instances, not CodeDeploy role
+# ENHANCED: EC2 policy for CodeDeploy and ELB operations
 resource "aws_iam_role_policy" "ec2_codedeploy_policy" {
-  name = "ec2-codedeploy-policy"
+  name = "bencenet-ec2-codedeploy-policy"
   role = aws_iam_role.ec2_role.id
 
   policy = jsonencode({
@@ -187,6 +187,34 @@ resource "aws_iam_role_policy" "ec2_codedeploy_policy" {
           "ecr:BatchGetImage"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateTags",
+          "ec2:DescribeInstances",
+          "ec2:DescribeTags"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeTargetHealth",
+          "elasticloadbalancing:DescribeLoadBalancers",
+          "elasticloadbalancing:DescribeListeners"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "*"
       }
     ]
   })
@@ -194,7 +222,7 @@ resource "aws_iam_role_policy" "ec2_codedeploy_policy" {
 
 # IAM Instance Profile
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2-code-deploy-profile"
+  name = "bencenet-ec2-code-deploy-profile"
   role = aws_iam_role.ec2_role.name
 }
 
@@ -214,9 +242,9 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
-# FIXED Launch Template for Blue Environment
+# Launch Template for Blue Environment
 resource "aws_launch_template" "blue_lt" {
-  name          = "blue-launch-template"
+  name          = "bencenet-blue-launch-template"
   image_id      = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
   key_name      = "mynewkey"
@@ -266,7 +294,7 @@ resource "aws_launch_template" "blue_lt" {
     INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
     REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
     
-    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Name,Value=blue-instance
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Name,Value=bencenet-blue-instance
     aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Environment,Value=blue
     aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=CodeDeployEnvironment,Value=blue
     
@@ -279,16 +307,16 @@ resource "aws_launch_template" "blue_lt" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name                   = "blue-instance"
+      Name                   = "bencenet-blue-instance"
       Environment           = "blue"
       CodeDeployEnvironment = "blue"
     }
   }
 }
 
-# FIXED Launch Template for Green Environment  
+# Launch Template for Green Environment  
 resource "aws_launch_template" "green_lt" {
-  name          = "green-launch-template"
+  name          = "bencenet-green-launch-template"
   image_id      = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
   key_name      = "mynewkey"
@@ -338,7 +366,7 @@ resource "aws_launch_template" "green_lt" {
     INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
     REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
     
-    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Name,Value=green-instance
+    aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Name,Value=bencenet-green-instance
     aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=Environment,Value=green
     aws ec2 create-tags --region $REGION --resources $INSTANCE_ID --tags Key=CodeDeployEnvironment,Value=green
     
@@ -351,7 +379,7 @@ resource "aws_launch_template" "green_lt" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name                   = "green-instance"
+      Name                   = "bencenet-green-instance"
       Environment           = "green"
       CodeDeployEnvironment = "green"
     }
@@ -360,7 +388,7 @@ resource "aws_launch_template" "green_lt" {
 
 # Auto Scaling Group for Blue
 resource "aws_autoscaling_group" "blue_asg" {
-  name                = "blue-asg"
+  name                = "bencenet-blue-asg"
   desired_capacity    = 1
   max_size            = 2
   min_size            = 1
@@ -375,7 +403,7 @@ resource "aws_autoscaling_group" "blue_asg" {
 
   tag {
     key                 = "Name"
-    value               = "blue-instance"
+    value               = "bencenet-blue-instance"
     propagate_at_launch = true
   }
 
@@ -388,7 +416,7 @@ resource "aws_autoscaling_group" "blue_asg" {
 
 # Auto Scaling Group for Green
 resource "aws_autoscaling_group" "green_asg" {
-  name                = "green-asg"
+  name                = "bencenet-green-asg"
   desired_capacity    = 1
   max_size            = 2
   min_size            = 1
@@ -403,7 +431,7 @@ resource "aws_autoscaling_group" "green_asg" {
 
   tag {
     key                 = "Name"
-    value               = "green-instance"
+    value               = "bencenet-green-instance"
     propagate_at_launch = true
   }
 
@@ -415,24 +443,24 @@ resource "aws_autoscaling_group" "green_asg" {
 }
 
 # Application Load Balancer
-resource "aws_lb" "bank_alb" {
-  name               = "bank-alb"
+resource "aws_lb" "bencenet_alb" {
+  name               = "bencenet-bank-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets           = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
 
   tags = {
-    Name = "bank-alb"
+    Name = "bencenet-bank-alb"
   }
 }
 
-# FIXED Target Group for Blue
+# Target Group for Blue
 resource "aws_lb_target_group" "blue_tg" {
-  name     = "blue-tg"
+  name     = "bencenet-blue-tg"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.bank_vpc.id
+  vpc_id   = aws_vpc.bencenet_vpc.id
   target_type = "instance"
 
   health_check {
@@ -447,12 +475,12 @@ resource "aws_lb_target_group" "blue_tg" {
   }
 }
 
-# FIXED Target Group for Green
+# Target Group for Green
 resource "aws_lb_target_group" "green_tg" {
-  name     = "green-tg"
+  name     = "bencenet-green-tg"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.bank_vpc.id
+  vpc_id   = aws_vpc.bencenet_vpc.id
   target_type = "instance"
 
   health_check {
@@ -467,9 +495,9 @@ resource "aws_lb_target_group" "green_tg" {
   }
 }
 
-# ALB Listener - FIXED to use correct reference
-resource "aws_lb_listener" "bank_listener" {
-  load_balancer_arn = aws_lb.bank_alb.arn
+# ALB Listener
+resource "aws_lb_listener" "bencenet_listener" {
+  load_balancer_arn = aws_lb.bencenet_alb.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -493,5 +521,5 @@ resource "aws_autoscaling_attachment" "green_asg_attachment" {
 
 # Output ALB DNS Name
 output "alb_dns_name" {
-  value = aws_lb.bank_alb.dns_name
+  value = aws_lb.bencenet_alb.dns_name
 }

@@ -1,3 +1,4 @@
+# scripts/validate_service.sh
 #!/bin/bash
 set -e
 
@@ -8,15 +9,15 @@ echo "Waiting 30 seconds for application to fully initialize..."
 sleep 30
 
 # Check if container is running
-echo "Checking if zenith-app container is running..."
-if docker ps | grep -q zenith-app; then
+echo "Checking if bencenet-app container is running..."
+if docker ps | grep -q bencenet-app; then
     echo "Container is running"
 else
     echo "Container is not running"
     echo "All containers:"
     docker ps -a
     echo "Container logs:"
-    docker logs zenith-app || true
+    docker logs bencenet-app || true
     exit 1
 fi
 
@@ -32,6 +33,8 @@ else
     echo "Testing root endpoint:"
     curl -v http://localhost:80/ || true
     echo "Container logs:"
-    docker logs zenith-app
+    docker logs bencenet-app
     exit 1
 fi
+
+# ================================================
