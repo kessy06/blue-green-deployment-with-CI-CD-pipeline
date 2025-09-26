@@ -1,133 +1,30 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_DEFAULT_REGION: eu-west-2
-    AWS_ACCOUNT_ID: "647540925028"
-    ECR_REPO_NAME: "bencenet-bank-repo"
-
 phases:
   pre_build:
     commands:
-      - echo "Logging in to Amazon ECR..."
-      - aws --version
-      - echo "Account ID: $AWS_ACCOUNT_ID"
-      - echo "Region: $AWS_DEFAULT_REGION"
-      - echo "ECR Repo: $ECR_REPO_NAME"
-      - ECR_REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
-      - echo "ECR URI: $ECR_REPO_URI"
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 647540925028.dkr.ecr.eu-west-2.amazonaws.com
+      - REPOSITORY_URI=647540925028.dkr.ecr.eu-west-2.amazonaws.com/bencenet-bank-app
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      - echo "Image tag: $IMAGE_TAG"
-
+  
   build:
     commands:
-      - echo "Build started on `date`"
-      - echo "Building the Docker image..."
-      - docker build -t $ECR_REPO_URI:latest .
-      - docker tag $ECR_REPO_URI:latest $ECR_REPO_URI:$IMAGE_TAG
-      - echo "Docker images built successfully"
-
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  
   post_build:
     commands:
-      - echo "Build completed on `date`"
-      - echo "Pushing the Docker images..."
-      - docker push $ECR_REPO_URI:latest
-      - docker push $ECR_REPO_URI:$IMAGE_TAG
-      - echo "Writing image definitions file..."
-      - printf '[{"name":"bencenet-bank-container","imageUri":"%s"}]' $ECR_REPO_URI:latest > imagedefinitions.json
-      - echo "Contents of imagedefinitions.json:"
-      - cat imagedefinitions.json
-      - echo "Creating deployment scripts..."
-      - mkdir -p scripts
-      - |
-        cat > scripts/install_dependencies.sh << 'EOF'
-        #!/bin/bash
-        yum update -y
-        yum install -y docker
-        service docker start
-        usermod -a -G docker ec2-user
-        
-        # Install CodeDeploy agent
-        yum install -y ruby wget
-        cd /home/ec2-user
-        wget https://aws-codedeploy-eu-west-2.s3.eu-west-2.amazonaws.com/latest/install
-        chmod +x ./install
-        ./install auto
-        EOF
-      - |
-        cat > scripts/start_server.sh << 'EOF'
-        #!/bin/bash
-        
-        # Get the image URI from imagedefinitions.json
-        IMAGE_URI=$(cat /opt/app/imagedefinitions.json | grep -o '"imageUri":"[^"]*' | grep -o '[^"]*$')
-        
-        # Stop and remove existing container if it exists
-        docker stop bencenet-bank-app 2>/dev/null || true
-        docker rm bencenet-bank-app 2>/dev/null || true
-        
-        # Login to ECR
-        aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $(echo $IMAGE_URI | cut -d'/' -f1)
-        
-        # Pull and run the new container
-        docker pull $IMAGE_URI
-        docker run -d --name bencenet-bank-app -p 80:3000 --restart unless-stopped $IMAGE_URI
-        
-        # Wait for container to be ready
-        sleep 10
-        EOF
-      - |
-        cat > scripts/stop_server.sh << 'EOF'
-        #!/bin/bash
-        docker stop bencenet-bank-app 2>/dev/null || true
-        docker rm bencenet-bank-app 2>/dev/null || true
-        EOF
-      - |
-        cat > scripts/validate_service.sh << 'EOF'
-        #!/bin/bash
-        
-        # Check if container is running
-        if ! docker ps | grep -q bencenet-bank-app; then
-            echo "Container is not running"
-            exit 1
-        fi
-        
-        # Check if application responds
-        max_attempts=30
-        attempt=1
-        
-        while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt: Testing application health..."
-            
-            if curl -f http://localhost/health 2>/dev/null; then
-                echo "Application is healthy!"
-                exit 0
-            fi
-            
-            if curl -f http://localhost/ 2>/dev/null; then
-                echo "Application is responding!"
-                exit 0
-            fi
-            
-            echo "Application not ready yet, waiting..."
-            sleep 5
-            attempt=$((attempt + 1))
-        done
-        
-        echo "Application failed to become healthy after $max_attempts attempts"
-        exit 1
-        EOF
-      - chmod +x scripts/*.sh
-      - echo "Build successful!"
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"bencenet-bank-app","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
   files:
     - imagedefinitions.json
-    - appspec.yml
-    - 'scripts/**/*'
-  discard-paths: no
-
-cache:
-  paths:
-    - '/root/.docker/**/*'
