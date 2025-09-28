@@ -1,8 +1,8 @@
-# Use the official Node.js runtime as base image from public ECR
-FROM public.ecr.aws/docker/library/node:18-alpine
+# Use the official Node.js runtime as base image with specific version for better caching
+FROM public.ecr.aws/lambda/nodejs:18
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /var/task
 
 # Copy package files first for better Docker layer caching
 COPY package*.json ./

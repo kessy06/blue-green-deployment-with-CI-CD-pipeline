@@ -1,457 +1,118 @@
+# Navigate to your project directory (if not already there)
+cd ~/Desktop/Desktop/CLOUDBOOSTA/myproject
+
+# Create the file using the 'cat' command (this is what I showed earlier)
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bencenet Bank EaZyLinks</title>
+    <title>Zenith Bank EaZyLinks</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
-
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        h1 {
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 1.2em;
-            font-weight: 300;
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-
-        .service-card {
-            background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid #e9ecef;
-        }
-
-        .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .service-card h3 {
-            color: #2c3e50;
-            font-size: 1.4em;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .service-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        button {
-            background: linear-gradient(45deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .status-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: linear-gradient(45deg, #27ae60, #2ecc71);
-            color: white;
-            border-radius: 25px;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
-        }
-
-        .alert {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             background: white;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            min-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
             text-align: center;
         }
-
-        .alert.show {
-            display: block;
-            animation: slideIn 0.3s ease;
+        .feature {
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
         }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
+        button {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
         }
-
-        .overlay.show {
-            display: block;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -60%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            padding-top: 30px;
-            border-top: 1px solid #e9ecef;
-            color: #7f8c8d;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-                margin: 10px;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            .services-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            button {
-                width: 100%;
-            }
+        button:hover {
+            background: #2980b9;
         }
     </style>
 </head>
 <body>
-    <div class="status-indicator" id="statusIndicator">
-        🟢 System Online
-    </div>
-
-    <div class="overlay" id="overlay"></div>
-    
-    <div class="alert" id="alertBox">
-        <h3 id="alertTitle">Transaction Status</h3>
-        <p id="alertMessage">Processing your request...</p>
-        <button onclick="closeAlert()" style="margin-top: 15px;">Close</button>
-    </div>
-
     <div class="container">
-        <div class="header">
-            <h1>Bencenet Bank EaZyLinks</h1>
-            <p class="subtitle">Your trusted digital banking solution - Secure, Fast, Reliable</p>
+        <h1>Zenith Bank EaZyLinks</h1>
+        <p>Welcome to your digital banking solution</p>
+        
+        <div class="feature">
+            <h3>Account Services</h3>
+            <button onclick="checkBalance()">Check Balance</button>
+            <button onclick="getStatement()">Account Statement</button>
         </div>
-
-        <div class="services-grid">
-            <div class="service-card">
-                <h3>
-                    <span class="service-icon"></span>
-                    Account Services
-                </h3>
-                <p>Manage your account with ease. Check balances, view statements, and monitor your financial health.</p>
-                <div class="button-group">
-                    <button onclick="checkBalance()">Check Balance</button>
-                    <button onclick="getStatement()">Account Statement</button>
-                    <button onclick="viewTransactionHistory()">Transaction History</button>
-                </div>
-            </div>
-
-            <div class="service-card">
-                <h3>
-                    <span class="service-icon"></span>
-                    Transfer Services
-                </h3>
-                <p>Send money instantly to friends, family, or business partners. Safe and secure transfers.</p>
-                <div class="button-group">
-                    <button onclick="sendMoney()">Send Money</button>
-                    <button onclick="withdraw()">Withdraw Funds</button>
-                    <button onclick="payBills()">Pay Bills</button>
-                </div>
-            </div>
-
-            <div class="service-card">
-                <h3>
-                    <span class="service-icon"></span>
-                    Account Management
-                </h3>
-                <p>Access your account securely or create a new account to start your banking journey with us.</p>
-                <div class="button-group">
-                    <button onclick="login()">Login</button>
-                    <button onclick="register()">Register</button>
-                    <button onclick="resetPassword()">Reset Password</button>
-                </div>
-            </div>
-
-            <div class="service-card">
-                <h3>
-                    <span class="service-icon"></span>
-                    Customer Support
-                </h3>
-                <p>Get help when you need it. Our support team is available 24/7 to assist you.</p>
-                <div class="button-group">
-                    <button onclick="contactSupport()">Contact Support</button>
-                    <button onclick="liveChat()">Live Chat</button>
-                    <button onclick="faq()">FAQ</button>
-                </div>
-            </div>
+        
+        <div class="feature">
+            <h3>Transfer Services</h3>
+            <button onclick="sendMoney()">Send Money</button>
+            <button onclick="withdraw()">Withdraw</button>
         </div>
-
-        <div class="footer">
-            <p>&copy; 2025 Bencenet Bank. All rights reserved. | Secured with 256-bit SSL encryption</p>
-            <p>Licensed and regulated financial institution | FDIC Insured</p>
+        
+        <div class="feature">
+            <h3>Account Management</h3>
+            <button onclick="login()">Login</button>
+            <button onclick="register()">Register</button>
         </div>
     </div>
 
     <script>
-        // Enhanced JavaScript functionality
-        function showAlert(title, message, type = 'info') {
-            const alertBox = document.getElementById('alertBox');
-            const alertTitle = document.getElementById('alertTitle');
-            const alertMessage = document.getElementById('alertMessage');
-            const overlay = document.getElementById('overlay');
-            
-            alertTitle.textContent = title;
-            alertMessage.textContent = message;
-            
-            overlay.classList.add('show');
-            alertBox.classList.add('show');
-        }
-
-        function closeAlert() {
-            const alertBox = document.getElementById('alertBox');
-            const overlay = document.getElementById('overlay');
-            
-            alertBox.classList.remove('show');
-            overlay.classList.remove('show');
-        }
-
-        function updateStatus(message, color = '#27ae60') {
-            const indicator = document.getElementById('statusIndicator');
-            indicator.textContent = message;
-            indicator.style.background = `linear-gradient(45deg, ${color}, ${color}dd)`;
-        }
-
-        // Account Services
         function checkBalance() {
-            updateStatus('🔄 Checking Balance...', '#f39c12');
-            
             fetch('/account-balance')
                 .then(res => res.json())
-                .then(data => {
-                    updateStatus('🟢 System Online', '#27ae60');
-                    showAlert('Account Balance', `Your current balance is: ${data.balance}`);
-                })
-                .catch(err => {
-                    updateStatus('🔴 Connection Error', '#e74c3c');
-                    showAlert('Error', 'Unable to retrieve balance. Please try again later.');
-                });
+                .then(data => alert('Balance: ' + data.balance))
+                .catch(err => alert('Error: ' + err.message));
         }
         
         function getStatement() {
-            updateStatus('🔄 Generating Statement...', '#f39c12');
-            
             fetch('/account-statement')
                 .then(res => res.json())
-                .then(data => {
-                    updateStatus('🟢 System Online', '#27ae60');
-                    showAlert('Account Statement', `Statement generated successfully: ${data.data}`);
-                })
-                .catch(err => {
-                    updateStatus('🔴 Connection Error', '#e74c3c');
-                    showAlert('Error', 'Unable to generate statement. Please try again later.');
-                });
+                .then(data => alert('Statement: ' + data.data))
+                .catch(err => alert('Error: ' + err.message));
         }
-
-        function viewTransactionHistory() {
-            showAlert('Transaction History', 'Your recent transactions will be displayed here. Feature coming soon!');
-        }
-
-        // Transfer Services
+        
         function sendMoney() {
-            updateStatus('🔄 Processing Transfer...', '#f39c12');
-            
             fetch('/send-money', { method: 'POST' })
                 .then(res => res.json())
-                .then(data => {
-                    updateStatus('🟢 System Online', '#27ae60');
-                    showAlert('Transfer Successful', data.message);
-                })
-                .catch(err => {
-                    updateStatus('🔴 Transfer Failed', '#e74c3c');
-                    showAlert('Transfer Error', 'Unable to process transfer. Please try again.');
-                });
+                .then(data => alert(data.message))
+                .catch(err => alert('Error: ' + err.message));
         }
         
         function withdraw() {
-            updateStatus('🔄 Processing Withdrawal...', '#f39c12');
-            
             fetch('/withdraw', { method: 'POST' })
                 .then(res => res.json())
-                .then(data => {
-                    updateStatus('🟢 System Online', '#27ae60');
-                    showAlert('Withdrawal Successful', data.message);
-                })
-                .catch(err => {
-                    updateStatus('🔴 Withdrawal Failed', '#e74c3c');
-                    showAlert('Withdrawal Error', 'Unable to process withdrawal. Please try again.');
-                });
+                .then(data => alert(data.message))
+                .catch(err => alert('Error: ' + err.message));
         }
-
-        function payBills() {
-            showAlert('Bill Payment', 'Bill payment feature coming soon! You will be able to pay utilities, loans, and more.');
-        }
-
-        // Account Management
+        
         function login() {
-            updateStatus('🔄 Authenticating...', '#f39c12');
-            
             fetch('/login', { method: 'POST' })
                 .then(res => res.json())
-                .then(data => {
-                    updateStatus('🟢 Login Successful', '#27ae60');
-                    showAlert('Login Status', data.message);
-                })
-                .catch(err => {
-                    updateStatus('🔴 Login Failed', '#e74c3c');
-                    showAlert('Login Error', 'Authentication failed. Please check your credentials.');
-                });
+                .then(data => alert(data.message))
+                .catch(err => alert('Error: ' + err.message));
         }
         
         function register() {
-            updateStatus('🔄 Creating Account...', '#f39c12');
-            
             fetch('/register', { method: 'POST' })
                 .then(res => res.json())
-                .then(data => {
-                    updateStatus('🟢 Registration Successful', '#27ae60');
-                    showAlert('Registration Status', data.message);
-                })
-                .catch(err => {
-                    updateStatus('🔴 Registration Failed', '#e74c3c');
-                    showAlert('Registration Error', 'Unable to create account. Please try again.');
-                });
+                .then(data => alert(data.message))
+                .catch(err => alert('Error: ' + err.message));
         }
-
-        function resetPassword() {
-            showAlert('Password Reset', 'Password reset instructions will be sent to your registered email address.');
-        }
-
-        // Customer Support
-        function contactSupport() {
-            showAlert('Customer Support', 'Our support team is available 24/7. Call us at: 1-800-BENCENET or email: support@bencenet.bank');
-        }
-
-        function liveChat() {
-            showAlert('Live Chat', 'Live chat feature coming soon! For immediate assistance, please call our support line.');
-        }
-
-        function faq() {
-            showAlert('FAQ', 'Frequently Asked Questions section coming soon. Visit our website for more information.');
-        }
-
-        // Initialize application
-        document.addEventListener('DOMContentLoaded', function() {
-            updateStatus('🟢 System Online');
-            
-            // Add some interactive animations
-            const cards = document.querySelectorAll('.service-card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-                card.style.animation = 'slideIn 0.5s ease forwards';
-            });
-        });
-
-        // Close alert when clicking overlay
-        document.getElementById('overlay').addEventListener('click', closeAlert);
     </script>
 </body>
 </html>

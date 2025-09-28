@@ -1,7 +1,7 @@
 {
-  "name": "bencenet-bank-app",
+  "name": "zenith-bank-app",
   "version": "1.0.0",
-  "description": "Bencenet Bank Banking Application",
+  "description": "Zenith Bank Banking Application",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
