@@ -42,3 +42,10 @@ app.get('/account-balance', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Zenith Bank app running on port ${PORT}`);
 });
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    message: 'Zenith Bank EaZyLinks is running'
+  });
+});
