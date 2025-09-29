@@ -1,41 +1,22 @@
-# ------------------------------
 # Terraform
-# ------------------------------
-*.tfstate
-*.tfstate.backup
 .terraform/
-terraform.tfvars    # contains secrets like GitHub token
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
+*.tfstate
+*.tfstate.*
 .terraform.lock.hcl
+*.tfvars
+*.tfplan
 
-# ------------------------------
-# AWS CLI / SDK
-# ------------------------------
-*.aws/credentials
-*.aws/config
+# Node modules
+node_modules/
+npm-debug.log*
 
-# ------------------------------
-# Docker
-# ------------------------------
-*.log
-*.env
-docker-compose.override.yml
-Dockerfile.local
-docker-compose.local.yml
-docker-compose.override.env
-
-# ------------------------------
-# VS Code
-# ------------------------------
-.vscode/
-.history/
-*.code-workspace
-
-# ------------------------------
-# Mac / Windows system files
-# ------------------------------
+# OS files
 .DS_Store
 Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
