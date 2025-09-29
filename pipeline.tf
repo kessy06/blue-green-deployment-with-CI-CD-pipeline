@@ -388,7 +388,7 @@ resource "aws_codedeploy_deployment_group" "zenith_bank_dg" {
   }
 
   # Target instances by Auto Scaling Groups
-  # autoscaling_groups = [aws_autoscaling_group.blue_asg.name] # Switch to green
+  # autoscaling_groups = [aws_autoscaling_group.blue_asg.name] # Switch to blue
     autoscaling_groups = [aws_autoscaling_group.green_asg.name]  # Switch to green
 
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
