@@ -13,6 +13,9 @@ RUN npm install --production
 # Copy the rest of the application code
 COPY . .
 
+# Create public directory if it doesn't exist and copy index.html
+RUN mkdir -p /app/public
+
 # Expose port 80
 EXPOSE 80
 
