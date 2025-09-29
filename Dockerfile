@@ -10,11 +10,12 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install --production
 
-# Copy the rest of the application code
+# Copy the entire application code including public directory
 COPY . .
 
-# Create public directory if it doesn't exist and copy index.html
-RUN mkdir -p /app/public
+# Verify the public directory exists and list contents
+RUN ls -la /app/
+RUN ls -la /app/public/ || echo "Public directory not found"
 
 # Expose port 80
 EXPOSE 80
