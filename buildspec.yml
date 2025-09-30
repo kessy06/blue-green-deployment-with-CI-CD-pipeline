@@ -1,4 +1,5 @@
 version: 0.2
+
 phases:
   pre_build:
     commands:
@@ -13,6 +14,7 @@ phases:
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:-latest}
       - echo "Image tag is $IMAGE_TAG"
+
   build:
     commands:
       - echo "Build started on $(date)"
@@ -20,6 +22,7 @@ phases:
       - docker build -t $ECR_REPO_URI:latest .
       - docker tag $ECR_REPO_URI:latest $ECR_REPO_URI:$IMAGE_TAG
       - echo "Docker images built successfully"
+
   post_build:
     commands:
       - echo "Build completed on $(date)"
@@ -31,9 +34,14 @@ phases:
       - echo "Contents of imagedefinitions.json:"
       - cat imagedefinitions.json
       - echo "Build successful!"
+
 artifacts:
   files:
     - imagedefinitions.json
     - appspec.yml
     - scripts/**/*
+    - app.js
+    - package.json
+    - Dockerfile
+    - public/**/*
   discard-paths: no
