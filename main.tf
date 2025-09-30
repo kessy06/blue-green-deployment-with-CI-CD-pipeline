@@ -358,10 +358,10 @@ resource "aws_launch_template" "green_lt" {
   }
 }
 
-# Auto Scaling Group for Blue
+# Auto Scaling Group for Blue - Updated with proper tags
 resource "aws_autoscaling_group" "blue_asg" {
   name                = "blue-asg"
-  desired_capacity    = 1
+  desired_capacity    = 1  # Blue starts with instances
   max_size            = 2
   min_size            = 1
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
@@ -384,14 +384,20 @@ resource "aws_autoscaling_group" "blue_asg" {
     value               = "blue"
     propagate_at_launch = true
   }
+
+  tag {
+    key                 = "CodeDeployEnvironment"
+    value               = "blue"
+    propagate_at_launch = true
+  }
 }
 
-# Auto Scaling Group for Green
+# Auto Scaling Group for Green - Updated with proper tags
 resource "aws_autoscaling_group" "green_asg" {
   name                = "green-asg"
-  desired_capacity    = 1
+  desired_capacity    = 0  # Start with 0 instances for blue-green
   max_size            = 2
-  min_size            = 1
+  min_size            = 0
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
   health_check_type   = "ELB"
   health_check_grace_period = 300
@@ -411,6 +417,20 @@ resource "aws_autoscaling_group" "green_asg" {
     key                 = "Environment"
     value               = "green"
     propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "CodeDeployEnvironment"
+    value               = "green"
+    propagate_at_launch = true
+  }
+
+  # Initial lifecycle hook to keep instances available for CodeDeploy
+  initial_lifecycle_hook {
+    name                 = "CodeDeploy-green"
+    default_result       = "CONTINUE"
+    heartbeat_timeout    = 60
+    lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
   }
 }
 
@@ -467,7 +487,18 @@ resource "aws_lb_target_group" "green_tg" {
   }
 }
 
-# ALB Listener - FIXED to use correct reference
+# # ALB Listener - FIXED to use correct reference
+# resource "aws_lb_listener" "bank_listener" {
+#   load_balancer_arn = aws_lb.bank_alb.arn
+#   port              = "80"
+#   protocol          = "HTTP"
+
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.blue_tg.arn
+#   }
+# }
+# ALB Listener with forward action for blue-green switching
 resource "aws_lb_listener" "bank_listener" {
   load_balancer_arn = aws_lb.bank_alb.arn
   port              = "80"
@@ -476,6 +507,31 @@ resource "aws_lb_listener" "bank_listener" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.blue_tg.arn
+  }
+
+  tags = {
+    Name = "bank-alb-listener"
+  }
+}
+
+# Additional listener rule for manual testing/rollback
+resource "aws_lb_listener_rule" "green_traffic" {
+  listener_arn = aws_lb_listener.bank_listener.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.green_tg.arn
+  }
+
+  condition {
+    host_header {
+      values = ["green.bencenet.com"]
+    }
+  }
+
+  tags = {
+    Name = "green-traffic-rule"
   }
 }
 

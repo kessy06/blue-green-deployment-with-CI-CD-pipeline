@@ -27,7 +27,7 @@ phases:
       - docker push $ECR_REPO_URI:latest
       - docker push $ECR_REPO_URI:$IMAGE_TAG
       - echo "Writing image definitions file..."
-      - printf '[{"name":"zenith-bank-container","imageUri":"%s"}]' $ECR_REPO_URI:latest > imagedefinitions.json
+      - printf '[{"name":"bencenet-bank-container","imageUri":"%s"}]' $ECR_REPO_URI:latest > imagedefinitions.json
       - echo "Contents of imagedefinitions.json:"
       - cat imagedefinitions.json
       - echo "Build successful!"
