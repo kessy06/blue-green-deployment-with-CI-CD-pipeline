@@ -442,12 +442,14 @@ resource "aws_lb" "bank_alb" {
   security_groups    = [aws_security_group.alb_sg.id]
   subnets           = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
 
+  enable_deletion_protection = false
+
   tags = {
     Name = "bank-alb"
   }
 }
 
-# FIXED Target Group for Blue
+# Target Group for Blue
 resource "aws_lb_target_group" "blue_tg" {
   name     = "blue-tg"
   port     = 80
@@ -465,9 +467,13 @@ resource "aws_lb_target_group" "blue_tg" {
     unhealthy_threshold = 3
     matcher             = "200"
   }
+
+  tags = {
+    Name = "blue-target-group"
+  }
 }
 
-# FIXED Target Group for Green
+# Target Group for Green
 resource "aws_lb_target_group" "green_tg" {
   name     = "green-tg"
   port     = 80
@@ -485,20 +491,13 @@ resource "aws_lb_target_group" "green_tg" {
     unhealthy_threshold = 3
     matcher             = "200"
   }
+
+  tags = {
+    Name = "green-target-group"
+  }
 }
 
-# # ALB Listener - FIXED to use correct reference
-# resource "aws_lb_listener" "bank_listener" {
-#   load_balancer_arn = aws_lb.bank_alb.arn
-#   port              = "80"
-#   protocol          = "HTTP"
-
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.blue_tg.arn
-#   }
-# }
-# ALB Listener with forward action for blue-green switching
+# ALB Listener
 resource "aws_lb_listener" "bank_listener" {
   load_balancer_arn = aws_lb.bank_alb.arn
   port              = "80"
@@ -513,6 +512,8 @@ resource "aws_lb_listener" "bank_listener" {
     Name = "bank-alb-listener"
   }
 }
+
+
 
 # Additional listener rule for manual testing/rollback
 resource "aws_lb_listener_rule" "green_traffic" {

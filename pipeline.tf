@@ -378,7 +378,7 @@ resource "aws_iam_role_policy" "codedeploy_bluegreen_policy" {
 # TRAFFI SWITCH - START HERE
 # TRAFFI SWITCH - ENDS HERE 
 
-# WORKING BLUE-GREEN CodeDeploy Deployment Group
+# CORRECTED BLUE-GREEN CodeDeploy Deployment Group
 resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
   app_name              = aws_codedeploy_app.bencenet_bank_app.name
   deployment_group_name = "bencenet-bank-dg"
@@ -390,13 +390,14 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
     deployment_type   = "BLUE_GREEN"
   }
 
-  # Specify only ONE Auto Scaling Group
+  # Specify only ONE Auto Scaling Group - CodeDeploy will create the green one automatically
   autoscaling_groups = [aws_autoscaling_group.blue_asg.name]
 
   # Blue-Green deployment configuration
   blue_green_deployment_config {
     deployment_ready_option {
-      action_on_timeout = "CONTINUE_DEPLOYMENT"
+      action_on_timeout    = "CONTINUE_DEPLOYMENT"
+      wait_time_in_minutes = 0
     }
 
     green_fleet_provisioning_option {
@@ -404,15 +405,19 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
     }
 
     terminate_blue_instances_on_deployment_success {
-      action = "TERMINATE"
+      action                           = "TERMINATE"
       termination_wait_time_in_minutes = 5
     }
   }
 
-  # Load balancer info using elb_info for Application Load Balancer
+  # CORRECTED: Use target_group_info with proper references
   load_balancer_info {
-    elb_info {
-      name = aws_lb.bank_alb.name
+    target_group_info {
+      name = aws_lb_target_group.blue_tg.name
+    }
+    
+    target_group_info {
+      name = aws_lb_target_group.green_tg.name
     }
   }
 
@@ -428,6 +433,12 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
     Name        = "bencenet-bank-deployment-group"
     Environment = "blue-green"
   }
+
+  depends_on = [
+    aws_lb.bank_alb,
+    aws_lb_target_group.blue_tg,
+    aws_lb_target_group.green_tg
+  ]
 }
 
 # TRAFFI SWITCH - START HERE
