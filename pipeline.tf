@@ -378,52 +378,25 @@ resource "aws_iam_role_policy" "codedeploy_bluegreen_policy" {
 # TRAFFI SWITCH - START HERE
 # TRAFFI SWITCH - ENDS HERE 
 
-# CORRECTED BLUE-GREEN CodeDeploy Deployment Group
+# IN_PLACE CodeDeploy Deployment Group (More Reliable)
 resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
   app_name              = aws_codedeploy_app.bencenet_bank_app.name
   deployment_group_name = "bencenet-bank-dg"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
 
-  # Blue-Green deployment configuration
+  # Use IN_PLACE deployment for reliability
   deployment_style {
-    deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
+    deployment_option = "WITHOUT_TRAFFIC_CONTROL"
+    deployment_type   = "IN_PLACE"
   }
 
-  # Specify only ONE Auto Scaling Group
+  # Target instances by Auto Scaling Groups
   autoscaling_groups = [aws_autoscaling_group.blue_asg.name]
 
-  # Blue-Green deployment configuration
-  blue_green_deployment_config {
-    deployment_ready_option {
-      action_on_timeout    = "CONTINUE_DEPLOYMENT"
-      wait_time_in_minutes = 0
-    }
-
-    green_fleet_provisioning_option {
-      action = "COPY_AUTO_SCALING_GROUP"
-    }
-
-    terminate_blue_instances_on_deployment_success {
-      action                           = "TERMINATE"
-      termination_wait_time_in_minutes = 5
-    }
-  }
-
-  # CORRECTED: Use target_group_pair_info for ALB blue-green deployments
+  # Use target_group_info for ALB health checks
   load_balancer_info {
-    target_group_pair_info {
-      prod_traffic_route {
-        listener_arns = [aws_lb_listener.bank_listener.arn]
-      }
-
-      target_group {
-        name = aws_lb_target_group.blue_tg.name
-      }
-
-      target_group {
-        name = aws_lb_target_group.green_tg.name
-      }
+    target_group_info {
+      name = aws_lb_target_group.blue_tg.name
     }
   }
 
@@ -437,14 +410,11 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
 
   tags = {
     Name        = "bencenet-bank-deployment-group"
-    Environment = "blue-green"
+    Environment = "blue"
   }
 
   depends_on = [
-    aws_lb.bank_alb,
-    aws_lb_listener.bank_listener,
-    aws_lb_target_group.blue_tg,
-    aws_lb_target_group.green_tg
+    aws_lb_target_group.blue_tg
   ]
 }
 
