@@ -390,7 +390,7 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
     deployment_type   = "BLUE_GREEN"
   }
 
-  # Specify only ONE Auto Scaling Group - CodeDeploy will create the green one automatically
+  # Specify only ONE Auto Scaling Group
   autoscaling_groups = [aws_autoscaling_group.blue_asg.name]
 
   # Blue-Green deployment configuration
@@ -410,14 +410,20 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
     }
   }
 
-  # CORRECTED: Use target_group_info with proper references
+  # CORRECTED: Use target_group_pair_info for ALB blue-green deployments
   load_balancer_info {
-    target_group_info {
-      name = aws_lb_target_group.blue_tg.name
-    }
-    
-    target_group_info {
-      name = aws_lb_target_group.green_tg.name
+    target_group_pair_info {
+      prod_traffic_route {
+        listener_arns = [aws_lb_listener.bank_listener.arn]
+      }
+
+      target_group {
+        name = aws_lb_target_group.blue_tg.name
+      }
+
+      target_group {
+        name = aws_lb_target_group.green_tg.name
+      }
     }
   }
 
@@ -436,6 +442,7 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
 
   depends_on = [
     aws_lb.bank_alb,
+    aws_lb_listener.bank_listener,
     aws_lb_target_group.blue_tg,
     aws_lb_target_group.green_tg
   ]

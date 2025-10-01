@@ -515,27 +515,6 @@ resource "aws_lb_listener" "bank_listener" {
 
 
 
-# Additional listener rule for manual testing/rollback
-resource "aws_lb_listener_rule" "green_traffic" {
-  listener_arn = aws_lb_listener.bank_listener.arn
-  priority     = 100
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.green_tg.arn
-  }
-
-  condition {
-    host_header {
-      values = ["green.bencenet.com"]
-    }
-  }
-
-  tags = {
-    Name = "green-traffic-rule"
-  }
-}
-
 # Attach Blue ASG to Blue Target Group
 resource "aws_autoscaling_attachment" "blue_asg_attachment" {
   autoscaling_group_name = aws_autoscaling_group.blue_asg.id
