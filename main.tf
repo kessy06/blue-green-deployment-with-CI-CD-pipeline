@@ -466,7 +466,7 @@ resource "aws_lb_target_group" "green_tg" {
     matcher             = "200"
   }
 }
-
+####
 # ALB Listener - FIXED to use correct reference
 resource "aws_lb_listener" "bank_listener" {
   load_balancer_arn = aws_lb.bank_alb.arn
@@ -475,10 +475,14 @@ resource "aws_lb_listener" "bank_listener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.blue_tg.arn
+    target_group_arn = var.active_environment == "blue" ? aws_lb_target_group.blue_tg.arn : aws_lb_target_group.green_tg.arn
+  }
+
+  tags = {
+    Name = "bank-alb-listener"
   }
 }
-
+####
 # Attach Blue ASG to Blue Target Group
 resource "aws_autoscaling_attachment" "blue_asg_attachment" {
   autoscaling_group_name = aws_autoscaling_group.blue_asg.id
