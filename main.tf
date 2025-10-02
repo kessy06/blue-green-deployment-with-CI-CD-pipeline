@@ -358,10 +358,10 @@ resource "aws_launch_template" "green_lt" {
   }
 }
 
-# Auto Scaling Group for Blue - Updated with proper tags
+# Auto Scaling Group for Blue
 resource "aws_autoscaling_group" "blue_asg" {
   name                = "blue-asg"
-  desired_capacity    = 1  # Blue starts with instances
+  desired_capacity    = 1
   max_size            = 2
   min_size            = 1
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
@@ -384,20 +384,14 @@ resource "aws_autoscaling_group" "blue_asg" {
     value               = "blue"
     propagate_at_launch = true
   }
-
-  tag {
-    key                 = "CodeDeployEnvironment"
-    value               = "blue"
-    propagate_at_launch = true
-  }
 }
 
-# Auto Scaling Group for Green - Updated with proper tags
+# Auto Scaling Group for Green
 resource "aws_autoscaling_group" "green_asg" {
   name                = "green-asg"
-  desired_capacity    = 0  # Start with 0 instances for blue-green
+  desired_capacity    = 1
   max_size            = 2
-  min_size            = 0
+  min_size            = 1
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
   health_check_type   = "ELB"
   health_check_grace_period = 300
@@ -418,20 +412,6 @@ resource "aws_autoscaling_group" "green_asg" {
     value               = "green"
     propagate_at_launch = true
   }
-
-  tag {
-    key                 = "CodeDeployEnvironment"
-    value               = "green"
-    propagate_at_launch = true
-  }
-
-  # Initial lifecycle hook to keep instances available for CodeDeploy
-  initial_lifecycle_hook {
-    name                 = "CodeDeploy-green"
-    default_result       = "CONTINUE"
-    heartbeat_timeout    = 60
-    lifecycle_transition = "autoscaling:EC2_INSTANCE_LAUNCHING"
-  }
 }
 
 # Application Load Balancer
@@ -442,14 +422,12 @@ resource "aws_lb" "bank_alb" {
   security_groups    = [aws_security_group.alb_sg.id]
   subnets           = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
 
-  enable_deletion_protection = false
-
   tags = {
     Name = "bank-alb"
   }
 }
 
-# Target Group for Blue
+# FIXED Target Group for Blue
 resource "aws_lb_target_group" "blue_tg" {
   name     = "blue-tg"
   port     = 80
@@ -467,13 +445,9 @@ resource "aws_lb_target_group" "blue_tg" {
     unhealthy_threshold = 3
     matcher             = "200"
   }
-
-  tags = {
-    Name = "blue-target-group"
-  }
 }
 
-# Target Group for Green
+# FIXED Target Group for Green
 resource "aws_lb_target_group" "green_tg" {
   name     = "green-tg"
   port     = 80
@@ -491,13 +465,9 @@ resource "aws_lb_target_group" "green_tg" {
     unhealthy_threshold = 3
     matcher             = "200"
   }
-
-  tags = {
-    Name = "green-target-group"
-  }
 }
 
-# ALB Listener
+# ALB Listener - FIXED to use correct reference
 resource "aws_lb_listener" "bank_listener" {
   load_balancer_arn = aws_lb.bank_alb.arn
   port              = "80"
@@ -507,13 +477,7 @@ resource "aws_lb_listener" "bank_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.blue_tg.arn
   }
-
-  tags = {
-    Name = "bank-alb-listener"
-  }
 }
-
-
 
 # Attach Blue ASG to Blue Target Group
 resource "aws_autoscaling_attachment" "blue_asg_attachment" {

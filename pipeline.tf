@@ -375,10 +375,7 @@ resource "aws_iam_role_policy" "codedeploy_bluegreen_policy" {
   })
 }
 
-# TRAFFI SWITCH - START HERE
-# TRAFFI SWITCH - ENDS HERE 
-
-# IN_PLACE CodeDeploy Deployment Group (More Reliable)
+# SIMPLIFIED CodeDeploy Deployment Group - Back to IN_PLACE for reliability
 resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
   app_name              = aws_codedeploy_app.bencenet_bank_app.name
   deployment_group_name = "bencenet-bank-dg"
@@ -393,33 +390,8 @@ resource "aws_codedeploy_deployment_group" "bencenet_bank_dg" {
   # Target instances by Auto Scaling Groups
   autoscaling_groups = [aws_autoscaling_group.blue_asg.name]
 
-  # Use target_group_info for ALB health checks
-  load_balancer_info {
-    target_group_info {
-      name = aws_lb_target_group.blue_tg.name
-    }
-  }
-
-  # Rollback configuration
-  auto_rollback_configuration {
-    enabled = true
-    events  = ["DEPLOYMENT_FAILURE"]
-  }
-
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
-
-  tags = {
-    Name        = "bencenet-bank-deployment-group"
-    Environment = "blue"
-  }
-
-  depends_on = [
-    aws_lb_target_group.blue_tg
-  ]
 }
-
-# TRAFFI SWITCH - START HERE
-# TRAFFI SWITCH - ENDS HERE 
 
 # CodePipeline
 resource "aws_codepipeline" "bencenet_bank_pipeline" {

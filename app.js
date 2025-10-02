@@ -40,14 +40,12 @@ app.get('/account-balance', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Bencenet Bank app running on port ${PORT}`);
+    console.log(`bencenet Bank app running on port ${PORT}`);
 });
-
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    message: 'Bencenet Bank EaZyLinks is running',
-    environment: process.env.ENVIRONMENT || 'blue'
+    message: 'bencenet Bank EaZyLinks is running'
   });
 });

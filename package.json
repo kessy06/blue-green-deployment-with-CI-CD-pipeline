@@ -1,7 +1,7 @@
 {
   "name": "bencenet-bank-app",
   "version": "1.0.0",
-  "description": "Bencenet Bank Banking Application",
+  "description": "bencenet Bank Banking Application",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
