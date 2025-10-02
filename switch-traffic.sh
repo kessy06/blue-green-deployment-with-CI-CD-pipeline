@@ -24,6 +24,7 @@ if [ "$1" != "blue" ] && [ "$1" != "green" ]; then
 fi
 
 TARGET_ENV=$1
+OLD_ENV=$([ "$TARGET_ENV" == "blue" ] && echo "green" || echo "blue")
 
 echo -e "${YELLOW}🔄 Switching traffic to ${TARGET_ENV} environment...${NC}"
 
@@ -40,15 +41,31 @@ echo "Current traffic routing: $CURRENT_TG"
 echo "Applying Terraform configuration..."
 terraform apply -var="active_environment=$TARGET_ENV" -auto-approve
 
-# Verify the switch
-echo -e "${YELLOW}✅ Verifying traffic switch...${NC}"
-sleep 10
+# Scale down the old environment
+echo -e "${YELLOW}📉 Scaling down $OLD_ENV environment...${NC}"
+aws autoscaling set-desired-capacity \
+    --auto-scaling-group-name ${OLD_ENV}-asg \
+    --desired-capacity 0 \
+    --region $REGION
+
+echo -e "${YELLOW}⏳ Waiting for $OLD_ENV instances to terminate...${NC}"
+sleep 30
+
+# Verify the switch and termination
+echo -e "${YELLOW}✅ Verifying traffic switch and termination...${NC}"
 
 NEW_TG=$(aws elbv2 describe-listeners \
     --load-balancer-name $ALB_NAME \
     --region $REGION \
     --query 'Listeners[0].DefaultActions[0].TargetGroupArn' \
     --output text | awk -F'/' '{print $2}')
+
+# Check old environment instances
+OLD_INSTANCES=$(aws autoscaling describe-auto-scaling-groups \
+    --auto-scaling-group-names ${OLD_ENV}-asg \
+    --region $REGION \
+    --query 'AutoScalingGroups[0].Instances' \
+    --output text)
 
 # Get ALB DNS for testing
 ALB_DNS=$(aws elbv2 describe-load-balancers \
@@ -59,12 +76,20 @@ ALB_DNS=$(aws elbv2 describe-load-balancers \
 
 echo ""
 echo -e "${GREEN}🎉 Traffic successfully switched to ${TARGET_ENV} environment!${NC}"
+echo -e "${GREEN}📉 ${OLD_ENV} environment scaled down to 0 instances${NC}"
 echo -e "${GREEN}🌐 Your Bencenet Bank application is available at:${NC}"
 echo -e "${GREEN}   http://$ALB_DNS${NC}"
+
+if [ -z "$OLD_INSTANCES" ]; then
+    echo -e "${GREEN}✅ ${OLD_ENV} instances terminated successfully${NC}"
+else
+    echo -e "${YELLOW}⚠️  ${OLD_ENV} instances still terminating...${NC}"
+fi
+
 echo ""
 echo -e "${YELLOW}💡 Test command:${NC}"
 echo -e "   curl http://$ALB_DNS/health"
 echo ""
 echo -e "${YELLOW}📊 Current status:${NC}"
-echo -e "   Previous: $CURRENT_TG"
-echo -e "   Current:  $NEW_TG"
+echo -e "   Active environment: $TARGET_ENV"
+echo -e "   ${OLD_ENV} environment: scaled to 0 instances"

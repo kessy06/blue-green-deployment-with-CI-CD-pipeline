@@ -357,13 +357,13 @@ resource "aws_launch_template" "green_lt" {
     }
   }
 }
-
-# Auto Scaling Group for Blue
+# # # # 
+# Auto Scaling Group for Blue - Updated with conditional desired capacity
 resource "aws_autoscaling_group" "blue_asg" {
   name                = "blue-asg"
-  desired_capacity    = 1
+  desired_capacity    = var.active_environment == "blue" ? 1 : 0  # Scale to 0 when not active
   max_size            = 2
-  min_size            = 1
+  min_size            = 0  # Allow scaling to 0
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
   health_check_type   = "ELB"
   health_check_grace_period = 300
@@ -384,14 +384,20 @@ resource "aws_autoscaling_group" "blue_asg" {
     value               = "blue"
     propagate_at_launch = true
   }
+
+  tag {
+    key                 = "CodeDeployEnvironment"
+    value               = "blue"
+    propagate_at_launch = true
+  }
 }
 
-# Auto Scaling Group for Green
+# Auto Scaling Group for Green - Updated with conditional desired capacity
 resource "aws_autoscaling_group" "green_asg" {
   name                = "green-asg"
-  desired_capacity    = 1
+  desired_capacity    = var.active_environment == "green" ? 1 : 0  # Scale to 0 when not active
   max_size            = 2
-  min_size            = 1
+  min_size            = 0  # Allow scaling to 0
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
   health_check_type   = "ELB"
   health_check_grace_period = 300
@@ -412,8 +418,14 @@ resource "aws_autoscaling_group" "green_asg" {
     value               = "green"
     propagate_at_launch = true
   }
-}
 
+  tag {
+    key                 = "CodeDeployEnvironment"
+    value               = "green"
+    propagate_at_launch = true
+  }
+}
+# # # # # # # # 
 # Application Load Balancer
 resource "aws_lb" "bank_alb" {
   name               = "bank-alb"
