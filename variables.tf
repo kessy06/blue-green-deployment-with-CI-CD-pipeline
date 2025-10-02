@@ -10,13 +10,13 @@ variable "account_id" {
   default     = "647540925028"
 }
    ###
-variable "active_environment" {
-  description = "Which environment should receive traffic (blue or green)"
-  type        = string
-  default     = "blue"
-  validation {
-    condition     = contains(["blue", "green"], var.active_environment)
-    error_message = "Active environment must be either 'blue' or 'green'."
-  }
-}
+# variable "active_environment" {
+#   description = "Which environment should receive traffic (blue or green)"
+#   type        = string
+#   default     = "blue"
+#   validation {
+#     condition     = contains(["blue", "green"], var.active_environment)
+#     error_message = "Active environment must be either 'blue' or 'green'."
+#   }
+# }
    ###

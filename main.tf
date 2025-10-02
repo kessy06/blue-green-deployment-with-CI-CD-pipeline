@@ -357,13 +357,13 @@ resource "aws_launch_template" "green_lt" {
     }
   }
 }
-# # # # 
-# Auto Scaling Group for Blue - Updated with conditional desired capacity
+
+# Auto Scaling Group for Blue
 resource "aws_autoscaling_group" "blue_asg" {
   name                = "blue-asg"
-  desired_capacity    = var.active_environment == "blue" ? 1 : 0  # Scale to 0 when not active
+  desired_capacity    = 1
   max_size            = 2
-  min_size            = 0  # Allow scaling to 0
+  min_size            = 1
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
   health_check_type   = "ELB"
   health_check_grace_period = 300
@@ -384,20 +384,14 @@ resource "aws_autoscaling_group" "blue_asg" {
     value               = "blue"
     propagate_at_launch = true
   }
-
-  tag {
-    key                 = "CodeDeployEnvironment"
-    value               = "blue"
-    propagate_at_launch = true
-  }
 }
 
-# Auto Scaling Group for Green - Updated with conditional desired capacity
+# Auto Scaling Group for Green
 resource "aws_autoscaling_group" "green_asg" {
   name                = "green-asg"
-  desired_capacity    = var.active_environment == "green" ? 1 : 0  # Scale to 0 when not active
+  desired_capacity    = 1
   max_size            = 2
-  min_size            = 0  # Allow scaling to 0
+  min_size            = 1
   vpc_zone_identifier = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
   health_check_type   = "ELB"
   health_check_grace_period = 300
@@ -418,14 +412,8 @@ resource "aws_autoscaling_group" "green_asg" {
     value               = "green"
     propagate_at_launch = true
   }
-
-  tag {
-    key                 = "CodeDeployEnvironment"
-    value               = "green"
-    propagate_at_launch = true
-  }
 }
-# # # # # # # # 
+
 # Application Load Balancer
 resource "aws_lb" "bank_alb" {
   name               = "bank-alb"
@@ -478,7 +466,7 @@ resource "aws_lb_target_group" "green_tg" {
     matcher             = "200"
   }
 }
-####
+
 # ALB Listener - FIXED to use correct reference
 resource "aws_lb_listener" "bank_listener" {
   load_balancer_arn = aws_lb.bank_alb.arn
@@ -487,14 +475,10 @@ resource "aws_lb_listener" "bank_listener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = var.active_environment == "blue" ? aws_lb_target_group.blue_tg.arn : aws_lb_target_group.green_tg.arn
-  }
-
-  tags = {
-    Name = "bank-alb-listener"
+    target_group_arn = aws_lb_target_group.blue_tg.arn
   }
 }
-####
+
 # Attach Blue ASG to Blue Target Group
 resource "aws_autoscaling_attachment" "blue_asg_attachment" {
   autoscaling_group_name = aws_autoscaling_group.blue_asg.id

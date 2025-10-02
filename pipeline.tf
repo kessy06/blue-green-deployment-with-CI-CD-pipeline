@@ -140,14 +140,8 @@ resource "aws_codebuild_project" "bencenet_bank_build" {
       name  = "IMAGE_TAG"
       value = "latest"
     }
-    ###
-   # ADD THIS NEW ENVIRONMENT VARIABLE ONLY
-    environment_variable {
-      name  = "ACTIVE_ENVIRONMENT"
-      value = "blue"  # Default to blue environment
-    }
   }
-  ###
+
   source {
     type = "CODEPIPELINE"
     buildspec = "buildspec.yml"
