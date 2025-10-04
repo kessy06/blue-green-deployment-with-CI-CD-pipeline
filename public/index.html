@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bencenet Bank EaZyLinks Version 2, Green Environment</title>
+    <title>Bencenet Bank EaZyLinks Version 1, Blue Environment</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 50px auto;
             padding: 20px;
-            background-color: rgb(10, 97, 21); /* Changed background color */
+            background-color: rgb(80, 121, 209); /* Changed background color */
         }
         .container {
             background: white;
@@ -19,7 +19,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #295785;
+            color: #3b6da0;
             text-align: center;
         }
         .feature {
@@ -29,7 +29,7 @@
             border-radius: 5px;
         }
         button {
-            background: #2ece51;
+            background: #6582e2;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -38,16 +38,27 @@
             margin: 5px;
         }
         button:hover {
-            background: #2fbe53;
+            background: #5ab2ec;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bencenet Bank EaZyLinks Version 2, Green Environment</h1> <!-- Updated heading -->
+        <h1>Bencenet Bank EaZyLinks Version 1, Blue Environment</h1> <!-- Updated heading -->
         <p>Welcome to your digital banking solution</p>
         
-                
+        <div class="feature">
+            <h3>Account Services</h3>
+            <button onclick="checkBalance()">Check Balance</button>
+            <button onclick="getStatement()">Account Statement</button>
+        </div>
+        
+        <div class="feature">
+            <h3>Transfer Services</h3>
+            <button onclick="sendMoney()">Send Money</button>
+            <button onclick="withdraw()">Withdraw</button>
+        </div>
+        
         <div class="feature">
             <h3>Account Management</h3>
             <button onclick="login()">Login</button>
@@ -55,7 +66,33 @@
         </div>
     </div>
     <script>
+        function checkBalance() {
+            fetch('/account-balance')
+                .then(res => res.json())
+                .then(data => alert('Balance: ' + data.balance))
+                .catch(err => alert('Error: ' + err.message));
+        }
         
+        function getStatement() {
+            fetch('/account-statement')
+                .then(res => res.json())
+                .then(data => alert('Statement: ' + data.data))
+                .catch(err => alert('Error: ' + err.message));
+        }
+        
+        function sendMoney() {
+            fetch('/send-money', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => alert(data.message))
+                .catch(err => alert('Error: ' + err.message));
+        }
+        
+        function withdraw() {
+            fetch('/withdraw', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => alert(data.message))
+                .catch(err => alert('Error: ' + err.message));
+        }
         
         function login() {
             fetch('/login', { method: 'POST' })
