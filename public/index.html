@@ -47,18 +47,7 @@
         <h1>Bencenet Bank EaZyLinks Version 2, Green Environment</h1> <!-- Updated heading -->
         <p>Welcome to your digital banking solution</p>
         
-        <div class="feature">
-            <h3>Account Services</h3>
-            <button onclick="checkBalance()">Check Balance</button>
-            <button onclick="getStatement()">Account Statement</button>
-        </div>
-        
-        <div class="feature">
-            <h3>Transfer Services</h3>
-            <button onclick="sendMoney()">Send Money</button>
-            <button onclick="withdraw()">Withdraw</button>
-        </div>
-        
+                
         <div class="feature">
             <h3>Account Management</h3>
             <button onclick="login()">Login</button>
@@ -66,33 +55,7 @@
         </div>
     </div>
     <script>
-        function checkBalance() {
-            fetch('/account-balance')
-                .then(res => res.json())
-                .then(data => alert('Balance: ' + data.balance))
-                .catch(err => alert('Error: ' + err.message));
-        }
         
-        function getStatement() {
-            fetch('/account-statement')
-                .then(res => res.json())
-                .then(data => alert('Statement: ' + data.data))
-                .catch(err => alert('Error: ' + err.message));
-        }
-        
-        function sendMoney() {
-            fetch('/send-money', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => alert(data.message))
-                .catch(err => alert('Error: ' + err.message));
-        }
-        
-        function withdraw() {
-            fetch('/withdraw', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => alert(data.message))
-                .catch(err => alert('Error: ' + err.message));
-        }
         
         function login() {
             fetch('/login', { method: 'POST' })

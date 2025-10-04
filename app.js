@@ -23,21 +23,6 @@ app.post('/register', (req, res) => {
     res.json({ status: 'success', message: 'Registration successful' });
 });
 
-app.post('/send-money', (req, res) => {
-    res.json({ status: 'success', message: 'Money sent successfully' });
-});
-
-app.post('/withdraw', (req, res) => {
-    res.json({ status: 'success', message: 'Withdrawal successful' });
-});
-
-app.get('/account-statement', (req, res) => {
-    res.json({ status: 'success', data: 'Account statement data' });
-});
-
-app.get('/account-balance', (req, res) => {
-    res.json({ status: 'success', balance: '₦50,000.00' });
-});
 
 app.listen(PORT, () => {
     console.log(`bencenet Bank app running on port ${PORT}`);
